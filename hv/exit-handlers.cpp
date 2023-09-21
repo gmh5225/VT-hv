@@ -396,9 +396,9 @@ void emulate_mov_to_cr4(vcpu* const cpu, uint64_t const gpr) {
   }
 
   // invalidate TLB entries if required
-  if (new_cr4.page_global_enable != curr_cr4.page_global_enable ||
-      !new_cr4.pcid_enable && curr_cr4.pcid_enable ||
-      new_cr4.smep_enable && !curr_cr4.smep_enable) {
+  if ((new_cr4.page_global_enable != curr_cr4.page_global_enable) ||
+      (!new_cr4.pcid_enable && curr_cr4.pcid_enable) ||
+      (new_cr4.smep_enable && !curr_cr4.smep_enable)) {
     invvpid_descriptor desc;
     desc.linear_address = 0;
     desc.reserved1      = 0;
