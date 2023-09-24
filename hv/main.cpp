@@ -18,8 +18,17 @@ void driver_unload(PDRIVER_OBJECT) {
   DbgPrint("[hv] Driver unloaded.\n");
 }
 
+const char* g_x = "123123";
+
+__declspec(dllexport) void testxx()
+{
+    DbgPrint("export testxx\n");
+}
+
 NTSTATUS driver_entry(PDRIVER_OBJECT const driver, PUNICODE_STRING) {
   DbgPrint("[hv] Driver loaded.\n");
+  testxx();
+  g_x = "45456";
 
   if (driver)
     driver->DriverUnload = driver_unload;

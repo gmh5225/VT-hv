@@ -5,14 +5,14 @@
 #include "spin-lock.h"
 
 // generic logging levels, usually only ERRORs are useful
-#define HV_LOG_INFO(fmt, ...)    hv::logger_write(fmt, __VA_ARGS__)
-#define HV_LOG_ERROR(fmt, ...)   hv::logger_write(fmt, __VA_ARGS__)
-#define HV_LOG_VERBOSE(fmt, ...) hv::logger_write(fmt, __VA_ARGS__)
+#define HV_LOG_INFO(fmt, ...)    //hv::logger_write(fmt, __VA_ARGS__)
+#define HV_LOG_ERROR(fmt, ...)   //hv::logger_write(fmt, __VA_ARGS__)
+#define HV_LOG_VERBOSE(fmt, ...) //hv::logger_write(fmt, __VA_ARGS__)
 
 // specific logging
-#define HV_LOG_MMR_ACCESS(fmt, ...)     hv::logger_write(fmt, __VA_ARGS__)
+#define HV_LOG_MMR_ACCESS(fmt, ...)     //hv::logger_write(fmt, __VA_ARGS__)
 #define HV_LOG_INJECT_INT(fmt, ...)     //hv::logger_write(fmt, __VA_ARGS__)
-#define HV_LOG_HOST_EXCEPTION(fmt, ...) hv::logger_write(fmt, __VA_ARGS__)
+#define HV_LOG_HOST_EXCEPTION(fmt, ...) //hv::logger_write(fmt, __VA_ARGS__)
 
 namespace hv {
 
