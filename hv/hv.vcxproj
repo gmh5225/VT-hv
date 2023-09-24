@@ -112,6 +112,7 @@
       <ControlFlowGuard>false</ControlFlowGuard>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>-fauto-generate-ir %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
