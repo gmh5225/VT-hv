@@ -116,7 +116,7 @@
     </ClCompile>
     <Link>
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
-      <AdditionalDependencies>ept.obj;mtrr.obj;timing.obj;page-tables.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ept.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
       <SpecifyArchitecture>false</SpecifyArchitecture>
@@ -171,7 +171,10 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mm.cpp" />
+    <ClCompile Include="mtrr.cpp" />
+    <ClCompile Include="page-tables.cpp" />
     <ClCompile Include="segment.cpp" />
+    <ClCompile Include="timing.cpp" />
     <ClCompile Include="vcpu.cpp" />
     <ClCompile Include="vmcs.cpp" />
   </ItemGroup>
