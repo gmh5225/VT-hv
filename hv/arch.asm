@@ -70,5 +70,11 @@
   ret
 ?write_ldtr@hv@@YAXG@Z endp
 
+AsmHypervVmcall PROC
+    vmcall                       ; __fastcall Vmcall(rcx = HypercallInputValue, rdx = InputParamGPA, r8 = OutputParamGPA)
+    ret
+
+AsmHypervVmcall ENDP
+
 end
 

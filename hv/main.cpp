@@ -38,10 +38,10 @@ NTSTATUS driver_entry(PDRIVER_OBJECT const driver, PUNICODE_STRING) {
     return STATUS_HV_OPERATION_FAILED;
   }
 
-  if (ping() == hv::hypervisor_signature)
+  /*if (ping() == hv::hypervisor_signature)
     DbgPrint("[client] Hypervisor signature matches.\n");
   else
-    DbgPrint("[client] Failed to ping hypervisor!\n");
+    DbgPrint("[client] Failed to ping hypervisor!\n");*/
 
   return STATUS_SUCCESS;
 }

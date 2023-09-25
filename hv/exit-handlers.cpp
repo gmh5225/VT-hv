@@ -180,42 +180,208 @@ void emulate_vmxon(vcpu*) {
   inject_hw_exception(general_protection, 0);
 }
 
-void emulate_vmcall(vcpu* const cpu) {
-  auto const code = cpu->ctx->rax & 0xFF;
-  auto const key  = cpu->ctx->rax >> 8;
+void emulate_vmcall_internal(vcpu* const cpu) {
+    auto const code = cpu->ctx->rax & 0xFF;
+    auto const key = cpu->ctx->rax >> 8;
 
-  // validate the hypercall key
-  if (key != hypercall_key) {
-    HV_LOG_VERBOSE("Invalid VMCALL key. RIP=%p.", vmx_vmread(VMCS_GUEST_RIP));
+    // validate the hypercall key
+    if (key != hypercall_key) {
+        HV_LOG_VERBOSE("Invalid VMCALL key. RIP=%p.", vmx_vmread(VMCS_GUEST_RIP));
+        inject_hw_exception(invalid_opcode);
+        return;
+    }
+
+    // handle the hypercall
+    switch (code) {
+    case hypercall_ping:                 hc::ping(cpu);                 return;
+    case hypercall_test:                 hc::test(cpu);                 return;
+    case hypercall_unload:               hc::unload(cpu);               return;
+    case hypercall_read_phys_mem:        hc::read_phys_mem(cpu);        return;
+    case hypercall_write_phys_mem:       hc::write_phys_mem(cpu);       return;
+    case hypercall_read_virt_mem:        hc::read_virt_mem(cpu);        return;
+    case hypercall_write_virt_mem:       hc::write_virt_mem(cpu);       return;
+    case hypercall_query_process_cr3:    hc::query_process_cr3(cpu);    return;
+    case hypercall_install_ept_hook:     hc::install_ept_hook(cpu);     return;
+    case hypercall_remove_ept_hook:      hc::remove_ept_hook(cpu);      return;
+    case hypercall_flush_logs:           hc::flush_logs(cpu);           return;
+    case hypercall_get_physical_address: hc::get_physical_address(cpu); return;
+    case hypercall_hide_physical_page:   hc::hide_physical_page(cpu);   return;
+    case hypercall_unhide_physical_page: hc::unhide_physical_page(cpu); return;
+    case hypercall_get_hv_base:          hc::get_hv_base(cpu);          return;
+    case hypercall_install_mmr:          hc::install_mmr(cpu);          return;
+    case hypercall_remove_mmr:           hc::remove_mmr(cpu);           return;
+    case hypercall_remove_all_mmrs:      hc::remove_all_mmrs(cpu);      return;
+    }
+
+    HV_LOG_VERBOSE("Unhandled VMCALL. RIP=%p.", vmx_vmread(VMCS_GUEST_RIP));
+
     inject_hw_exception(invalid_opcode);
-    return;
-  }
+}
 
-  // handle the hypercall
-  switch (code) {
-  case hypercall_ping:                 hc::ping(cpu);                 return;
-  case hypercall_test:                 hc::test(cpu);                 return;
-  case hypercall_unload:               hc::unload(cpu);               return;
-  case hypercall_read_phys_mem:        hc::read_phys_mem(cpu);        return;
-  case hypercall_write_phys_mem:       hc::write_phys_mem(cpu);       return;
-  case hypercall_read_virt_mem:        hc::read_virt_mem(cpu);        return;
-  case hypercall_write_virt_mem:       hc::write_virt_mem(cpu);       return;
-  case hypercall_query_process_cr3:    hc::query_process_cr3(cpu);    return;
-  case hypercall_install_ept_hook:     hc::install_ept_hook(cpu);     return;
-  case hypercall_remove_ept_hook:      hc::remove_ept_hook(cpu);      return;
-  case hypercall_flush_logs:           hc::flush_logs(cpu);           return;
-  case hypercall_get_physical_address: hc::get_physical_address(cpu); return;
-  case hypercall_hide_physical_page:   hc::hide_physical_page(cpu);   return;
-  case hypercall_unhide_physical_page: hc::unhide_physical_page(cpu); return;
-  case hypercall_get_hv_base:          hc::get_hv_base(cpu);          return;
-  case hypercall_install_mmr:          hc::install_mmr(cpu);          return;
-  case hypercall_remove_mmr:           hc::remove_mmr(cpu);           return;
-  case hypercall_remove_all_mmrs:      hc::remove_all_mmrs(cpu);      return;
-  }
+extern "C"
+UINT64 inline 
+AsmHypervVmcall(
+    unsigned long long HypercallInputValue, 
+    unsigned long long InputParamGPA, 
+    unsigned long long OutputParamGPA, 
+    unsigned long long Optional4
+);
 
-  HV_LOG_VERBOSE("Unhandled VMCALL. RIP=%p.", vmx_vmread(VMCS_GUEST_RIP));
+void emulate_vmcall(vcpu* const cpu) {
 
-  inject_hw_exception(invalid_opcode);
+    typedef union _HYPERCALL_INPUT_VALUE
+    {
+        UINT64 Value;
+        struct
+        {
+            UINT64 CallCode : 16; // HYPERCALL_CODE
+            UINT64 Fast : 1;
+            UINT64 VariableHeaderSize : 9;
+            UINT64 IsNested : 1;
+            UINT64 Reserved0 : 5;
+            UINT64 RepCount : 12;
+            UINT64 Reserved1 : 4;
+            UINT64 RepStartIndex : 12;
+            UINT64 Reserved2 : 4;
+        } Bitmap;
+    } HYPERCALL_INPUT_VALUE, * PHYPERCALL_INPUT_VALUE;
+
+    enum HYPERCALL_CODE
+    {
+        HvSwitchVirtualAddressSpace = 0x0001,
+        HvFlushVirtualAddressSpace = 0x0002,
+        HvFlushVirtualAddressList = 0x0003,
+        HvGetLogicalProcessorRunTime = 0x0004,
+        // 0x0005..0x0007 are reserved
+        HvCallNotifyLongSpinWait = 0x0008,
+        HvCallParkedVirtualProcessors = 0x0009,
+        HvCallSyntheticClusterIpi = 0x000B,
+        HvCallModifyVtlProtectionMask = 0x000C,
+        HvCallEnablePartitionVtl = 0x000D,
+        HvCallDisablePartitionVtl = 0x000E,
+        HvCallEnableVpVtl = 0x000F,
+        HvCallDisableVpVtl = 0x0010,
+        HvCallVtlCall = 0x0011,
+        HvCallVtlReturn = 0x0012,
+        HvCallFlushVirtualAddressSpaceEx = 0x0013,
+        HvCallFlushVirtualAddressListEx = 0x0014,
+        HvCallSendSyntheticClusterIpiEx = 0x0015,
+        // 0x0016..0x003F are reserved
+        HvCreatePartition = 0x0040,
+        HvInitializePartition = 0x0041,
+        HvFinalizePartition = 0x0042,
+        HvDeletePartition = 0x0043,
+        HvGetPartitionProperty = 0x0044,
+        HvSetPartitionProperty = 0x0045,
+        HvGetPartitionId = 0x0046,
+        HvGetNextChildPartition = 0x0047,
+        HvDepositMemory = 0x0048,
+        HvWithdrawMemory = 0x0049,
+        HvGetMemoryBalance = 0x004A,
+        HvMapGpaPages = 0x004B,
+        HvUnmapGpaPages = 0x004C,
+        HvInstallIntercept = 0x004D,
+        HvCreateVp = 0x004E,
+        HvDeleteVp = 0x004F,
+        HvGetVpRegisters = 0x0050,
+        HvSetVpRegisters = 0x0051,
+        HvTranslateVirtualAddress = 0x0052,
+        HvReadGpa = 0x0053,
+        HvWriteGpa = 0x0054,
+        // 0x0055 is deprecated
+        HvClearVirtualInterrupt = 0x0056,
+        // 0x0057 is deprecated
+        HvDeletePort = 0x0058,
+        HvConnectPort = 0x0059,
+        HvGetPortProperty = 0x005A,
+        HvDisconnectPort = 0x005B,
+        HvPostMessage = 0x005C,
+        HvSignalEvent = 0x005D,
+        HvSavePartitionState = 0x005E,
+        HvRestorePartitionState = 0x005F,
+        HvInitializeEventLogBufferGroup = 0x0060,
+        HvFinalizeEventLogBufferGroup = 0x0061,
+        HvCreateEventLogBuffer = 0x0062,
+        HvDeleteEventLogBuffer = 0x0063,
+        HvMapEventLogBuffer = 0x0064,
+        HvUnmapEventLogBuffer = 0x0065,
+        HvSetEventLogGroupSources = 0x0066,
+        HvReleaseEventLogBuffer = 0x0067,
+        HvFlushEventLogBuffer = 0x0068,
+        HvPostDebugData = 0x0069,
+        HvRetrieveDebugData = 0x006A,
+        HvResetDebugSession = 0x006B,
+        HvMapStatsPage = 0x006C,
+        HvUnmapStatsPage = 0x006D,
+        HvCallMapSparseGpaPages = 0x006E,
+        HvCallSetSystemProperty = 0x006F,
+        HvCallSetPortProperty = 0x0070,
+        // 0x0071..0x0075 are reserved
+        HvCallAddLogicalProcessor = 0x0076,
+        HvCallRemoveLogicalProcessor = 0x0077,
+        HvCallQueryNumaDistance = 0x0078,
+        HvCallSetLogicalProcessorProperty = 0x0079,
+        HvCallGetLogicalProcessorProperty = 0x007A,
+        HvCallGetSystemProperty = 0x007B,
+        HvCallMapDeviceInterrupt = 0x007C,
+        HvCallUnmapDeviceInterrupt = 0x007D,
+        HvCallRetargetDeviceInterrupt = 0x007E,
+        // 0x007F is reserved
+        HvCallMapDevicePages = 0x0080,
+        HvCallUnmapDevicePages = 0x0081,
+        HvCallAttachDevice = 0x0082,
+        HvCallDetachDevice = 0x0083,
+        HvCallNotifyStandbyTransition = 0x0084,
+        HvCallPrepareForSleep = 0x0085,
+        HvCallPrepareForHibernate = 0x0086,
+        HvCallNotifyPartitionEvent = 0x0087,
+        HvCallGetLogicalProcessorRegisters = 0x0088,
+        HvCallSetLogicalProcessorRegisters = 0x0089,
+        HvCallQueryAssotiatedLpsforMca = 0x008A,
+        HvCallNotifyRingEmpty = 0x008B,
+        HvCallInjectSyntheticMachineCheck = 0x008C,
+        HvCallScrubPartition = 0x008D,
+        HvCallCollectLivedump = 0x008E,
+        HvCallDisableHypervisor = 0x008F,
+        HvCallModifySparseGpaPages = 0x0090,
+        HvCallRegisterInterceptResult = 0x0091,
+        HvCallUnregisterInterceptResult = 0x0092,
+        HvCallAssertVirtualInterrupt = 0x0094,
+        HvCallCreatePort = 0x0095,
+        HvCallConnectPort = 0x0096,
+        HvCallGetSpaPageList = 0x0097,
+        // 0x0098 is reserved
+        HvCallStartVirtualProcessor = 0x009A,
+        HvCallGetVpIndexFromApicId = 0x009A,
+        // 0x009A..0x00AE are reserved
+        HvCallFlushGuestPhysicalAddressSpace = 0x00AF,
+        HvCallFlushGuestPhysicalAddressList = 0x00B0
+    };
+
+    HYPERCALL_INPUT_VALUE InputValue = { 0 };
+    InputValue.Value = cpu->ctx->rcx;
+
+    switch (InputValue.Bitmap.CallCode)
+    {
+    case HvSwitchVirtualAddressSpace:
+    case HvFlushVirtualAddressSpace:
+    case HvFlushVirtualAddressList:
+    case HvCallFlushVirtualAddressSpaceEx:
+    case HvCallFlushVirtualAddressListEx:
+    {
+        vmx_invvpid(invvpid_all_context, {});
+        break;
+    }
+    case HvCallFlushGuestPhysicalAddressSpace:
+    case HvCallFlushGuestPhysicalAddressList:
+    {
+        vmx_invept(invept_single_context, {});
+        break;
+    }
+    }
+
+    cpu->ctx->rax = AsmHypervVmcall(cpu->ctx->rcx, cpu->ctx->rdx, cpu->ctx->r8, cpu->ctx->r9);
+
 }
 
 void handle_vmx_preemption(vcpu*) {
