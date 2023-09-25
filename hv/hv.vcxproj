@@ -116,6 +116,7 @@
     </ClCompile>
     <Link>
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
+      <AdditionalDependencies>vcpu.obj;exit-handlers.obj;ept.obj;mtrr.obj;timing.obj;page-tables.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
       <SpecifyArchitecture>false</SpecifyArchitecture>
@@ -161,8 +162,6 @@
     <ClInclude Include="vmx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ept.cpp" />
-    <ClCompile Include="exit-handlers.cpp" />
     <ClCompile Include="gdt.cpp" />
     <ClCompile Include="hv.cpp" />
     <ClCompile Include="hypercalls.cpp" />
@@ -171,11 +170,7 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mm.cpp" />
-    <ClCompile Include="mtrr.cpp" />
-    <ClCompile Include="page-tables.cpp" />
     <ClCompile Include="segment.cpp" />
-    <ClCompile Include="timing.cpp" />
-    <ClCompile Include="vcpu.cpp" />
     <ClCompile Include="vmcs.cpp" />
   </ItemGroup>
   <ItemGroup>

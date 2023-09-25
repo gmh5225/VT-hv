@@ -87,9 +87,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="exit-handlers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gdt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,25 +102,10 @@
     <ClCompile Include="mm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="page-tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="segment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vcpu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hypercalls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ept.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mtrr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="timing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vmcs.cpp">
