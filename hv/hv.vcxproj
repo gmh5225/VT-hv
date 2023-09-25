@@ -116,7 +116,7 @@
     </ClCompile>
     <Link>
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
-      <AdditionalDependencies>ept.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Inf>
       <SpecifyArchitecture>false</SpecifyArchitecture>
@@ -162,6 +162,7 @@
     <ClInclude Include="vmx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ept.cpp" />
     <ClCompile Include="exit-handlers.cpp" />
     <ClCompile Include="gdt.cpp" />
     <ClCompile Include="hv.cpp" />
