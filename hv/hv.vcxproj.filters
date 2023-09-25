@@ -141,6 +141,9 @@
     <ClCompile Include="ept2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ept1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="interrupt-handlers.asm">
