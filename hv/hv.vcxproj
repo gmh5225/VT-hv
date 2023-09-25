@@ -163,6 +163,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ept.cpp" />
+    <ClCompile Include="ept1.cpp" />
+    <ClCompile Include="ept2.cpp" />
+    <ClCompile Include="ept3.cpp" />
     <ClCompile Include="exit-handlers.cpp" />
     <ClCompile Include="gdt.cpp" />
     <ClCompile Include="hv.cpp" />
