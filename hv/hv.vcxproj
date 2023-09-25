@@ -116,7 +116,8 @@
     </ClCompile>
     <Link>
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ept1.obj;ept2.obj;ept3.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
     </Link>
     <Inf>
       <SpecifyArchitecture>false</SpecifyArchitecture>
@@ -163,9 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ept.cpp" />
-    <ClCompile Include="ept1.cpp" />
-    <ClCompile Include="ept2.cpp" />
-    <ClCompile Include="ept3.cpp" />
     <ClCompile Include="exit-handlers.cpp" />
     <ClCompile Include="gdt.cpp" />
     <ClCompile Include="hv.cpp" />
