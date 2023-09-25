@@ -118,6 +118,7 @@
       <EntryPointSymbol>driver_entry</EntryPointSymbol>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
+      <AdditionalOptions>-fauto-generate-ir %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Inf>
       <SpecifyArchitecture>false</SpecifyArchitecture>
